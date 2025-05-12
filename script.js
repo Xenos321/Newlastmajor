@@ -1,3 +1,5 @@
+// Combined JavaScript for MediCare Clinic
+
 document.addEventListener('DOMContentLoaded', function() {
     // DOM Elements
     const navLinks = document.querySelectorAll('nav a');
@@ -24,11 +26,16 @@ document.addEventListener('DOMContentLoaded', function() {
     const appointmentsList = document.getElementById('appointments-list');
     const printAppointmentBtn = document.getElementById('print-appointment');
     const viewAppointmentsBtn = document.getElementById('view-appointments');
-    
     const patientLoginBtn = document.getElementById('patient-login-btn');
     const adminLoginBtn = document.getElementById('admin-login-btn');
     const loginLabel = document.getElementById('login-label');
 
+    // Admin functionality
+    let appointmentsChart = null;
+    const adminCredentials = {
+        username: "admin",
+        password: "admin123"
+    };
 
     // Calendar instance variable
     let calendar = null;
@@ -48,54 +55,6 @@ document.addEventListener('DOMContentLoaded', function() {
             { id: 'doc-6', name: 'Dr. Emily Rodriguez', availableDays: ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday'] }
         ]
     };
-    
-    // Helper function to find doctor by name
-    function findDoctorByName(name) {
-        for (const department in doctorsData) {
-            const doctor = doctorsData[department].find(doc => doc.name === name);
-            if (doctor) {
-                return doctor;
-            }
-        }
-        return null;
-    }
-
-    // Function to update calendar with doctor's available days
-    function updateCalendar(doctorName) {
-        if (calendar) {
-            calendar.destroy();
-        }
-
-        const doctor = findDoctorByName(doctorName);
-        if (!doctor) {
-            console.error("Doctor not found!");
-            return;
-        }
-
-        const allowedDays = doctor.availableDays;
-
-        // Generate list of available dates in next 14 days
-        const today = new Date();
-        const availableDates = [];
-
-        for (let i = 0; i <= 14; i++) {
-            const date = new Date(today);
-            date.setDate(today.getDate() + i);
-
-            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
-            if (allowedDays.includes(dayName)) {
-                availableDates.push(date.toISOString().split('T')[0]);
-            }
-        }
-
-        // Setup flatpickr
-        calendar = flatpickr(dateInput, {
-            dateFormat: "Y-m-d",
-            enable: availableDates,
-            minDate: "today",
-            maxDate: new Date().fp_incr(14)
-        });
-    }
     
     // Sample appointments data
     let appointments = [
@@ -130,7 +89,7 @@ document.addEventListener('DOMContentLoaded', function() {
             status: 'cancelled'
         }
     ];
-    
+
     // Initialize the page
     init();
     
@@ -162,38 +121,37 @@ document.addEventListener('DOMContentLoaded', function() {
             });
         });
 
-        // Add this to the setupEventListeners function
-patientLoginBtn?.addEventListener('click', () => {
-    patientLoginBtn.classList.add('active-login-option');
-    adminLoginBtn.classList.remove('active-login-option');
-    document.getElementById('login-label').textContent = 'Email';
-    document.getElementById('login-email').placeholder = 'Enter your email';
-});
+        // Login options
+        patientLoginBtn?.addEventListener('click', () => {
+            patientLoginBtn.classList.add('active-login-option');
+            adminLoginBtn.classList.remove('active-login-option');
+            document.getElementById('login-label').textContent = 'Email';
+            document.getElementById('login-email').placeholder = 'Enter your email';
+        });
 
-adminLoginBtn?.addEventListener('click', () => {
-    adminLoginBtn.classList.add('active-login-option');
-    patientLoginBtn.classList.remove('active-login-option');
-    document.getElementById('login-label').textContent = 'Username';
-    document.getElementById('login-email').placeholder = 'Enter admin username';
-});
-// In the setupEventListeners function, update the login form submission:
-document.getElementById('login-form')?.addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const isAdminLogin = adminLoginBtn.classList.contains('active-login-option');
-    const username = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    
-    if (isAdminLogin) {
-        handleAdminLogin(username, password);
-    } else {
-        // Patient login logic
-        alert('Patient login functionality will be implemented');
-        loginModal.classList.remove('active');
-    }
-});
+        adminLoginBtn?.addEventListener('click', () => {
+            adminLoginBtn.classList.add('active-login-option');
+            patientLoginBtn.classList.remove('active-login-option');
+            document.getElementById('login-label').textContent = 'Username';
+            document.getElementById('login-email').placeholder = 'Enter admin username';
+        });
 
-
+        // Login form submission
+        document.getElementById('login-form')?.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const isAdminLogin = adminLoginBtn.classList.contains('active-login-option');
+            const username = document.getElementById('login-email').value;
+            const password = document.getElementById('login-password').value;
+            
+            if (isAdminLogin) {
+                handleAdminLogin(username, password);
+            } else {
+                // Patient login logic
+                alert('Patient login functionality will be implemented');
+                loginModal.classList.remove('active');
+            }
+        });
         
         // Auth buttons
         document.getElementById('login-btn')?.addEventListener('click', () => {
@@ -488,4 +446,248 @@ document.getElementById('login-form')?.addEventListener('submit', function(e) {
             });
         }
     }
+
+    // Helper function to find doctor by name
+    function findDoctorByName(name) {
+        for (const department in doctorsData) {
+            const doctor = doctorsData[department].find(doc => doc.name === name);
+            if (doctor) {
+                return doctor;
+            }
+        }
+        return null;
+    }
+
+    // Function to update calendar with doctor's available days
+    function updateCalendar(doctorName) {
+        if (calendar) {
+            calendar.destroy();
+        }
+
+        const doctor = findDoctorByName(doctorName);
+        if (!doctor) {
+            console.error("Doctor not found!");
+            return;
+        }
+
+        const allowedDays = doctor.availableDays;
+
+        // Generate list of available dates in next 14 days
+        const today = new Date();
+        const availableDates = [];
+
+        for (let i = 0; i <= 14; i++) {
+            const date = new Date(today);
+            date.setDate(today.getDate() + i);
+
+            const dayName = date.toLocaleDateString('en-US', { weekday: 'long' });
+            if (allowedDays.includes(dayName)) {
+                availableDates.push(date.toISOString().split('T')[0]);
+            }
+        }
+
+        // Setup flatpickr
+        calendar = flatpickr(dateInput, {
+            dateFormat: "Y-m-d",
+            enable: availableDates,
+            minDate: "today",
+            maxDate: new Date().fp_incr(14)
+        });
+    }
+
+    // Admin functions
+    function handleAdminLogin(username, password) {
+        if (!username || !password) {
+            alert('Please enter both username and password');
+            return;
+        }
+
+        if (username === adminCredentials.username && password === adminCredentials.password) {
+            // Hide all sections
+            document.querySelectorAll('section').forEach(section => {
+                section.classList.remove('active-section');
+            });
+            
+            // Show admin section
+            document.getElementById('admin-section').classList.add('active-section');
+            
+            // Close login modal
+            document.getElementById('login-modal').classList.remove('active');
+            
+            // Update UI
+            document.querySelector('nav').style.display = 'none';
+            document.querySelector('.auth-buttons').innerHTML = '<button id="logout-btn">Logout</button>';
+            
+            // Set up logout button
+            document.getElementById('logout-btn').addEventListener('click', logoutAdmin);
+            
+            // Initialize dashboard
+            initDashboard();
+        } else {
+            alert('Invalid admin credentials');
+        }
+    }
+
+    function logoutAdmin() {
+        // Show all sections again
+        document.querySelector('nav').style.display = 'flex';
+        document.querySelector('.auth-buttons').innerHTML = `
+            <button id="login-btn">Login</button>
+            <button id="register-btn">Register</button>
+        `;
+        
+        // Show home section
+        document.querySelectorAll('section').forEach(section => {
+            section.classList.remove('active-section');
+        });
+        document.getElementById('home-section').classList.add('active-section');
+        
+        // Reset nav active state
+        document.querySelectorAll('nav a').forEach(link => link.classList.remove('active'));
+        document.getElementById('home-link').classList.add('active');
+        
+        // Reinitialize event listeners
+        setupEventListeners();
+    }
+
+    function initDashboard() {
+        // Set default date to today
+        const today = new Date().toISOString().split('T')[0];
+        document.getElementById('dashboard-date').value = today;
+        document.getElementById('selected-date-text').textContent = formatDate(today);
+        
+        // Load data for today
+        loadDashboardData(today);
+        
+        // Set up date change listener
+        document.getElementById('dashboard-date').addEventListener('change', function() {
+            const selectedDate = this.value;
+            document.getElementById('selected-date-text').textContent = formatDate(selectedDate);
+            loadDashboardData(selectedDate);
+        });
+    }
+
+    function loadDashboardData(date) {
+        // In a real app, this would fetch from an API
+        // For demo purposes, we'll use sample data
+        
+        // Sample data for the selected date
+        const sampleData = {
+            total: 24,
+            booked: 18,
+            completed: 4,
+            cancelled: 2,
+            appointments: [
+                { id: 'MC-2023-101', patient: 'John Doe', doctor: 'Dr. Sarah Johnson', department: 'Cardiology', time: '09:00 AM', status: 'booked' },
+                { id: 'MC-2023-102', patient: 'Jane Smith', doctor: 'Dr. Michael Chen', department: 'Neurology', time: '10:30 AM', status: 'booked' },
+                { id: 'MC-2023-103', patient: 'Robert Brown', doctor: 'Dr. Emily Rodriguez', department: 'General', time: '11:15 AM', status: 'completed' },
+                { id: 'MC-2023-104', patient: 'Alice Johnson', doctor: 'Dr. Sarah Johnson', department: 'Cardiology', time: '02:00 PM', status: 'cancelled' }
+            ],
+            dailyStats: {
+                labels: ['8AM', '10AM', '12PM', '2PM', '4PM'],
+                booked: [5, 8, 3, 6, 2],
+                completed: [1, 2, 0, 1, 0],
+                cancelled: [0, 1, 0, 1, 0]
+            }
+        };
+        
+        // Update stats
+        document.getElementById('total-appointments').textContent = sampleData.total;
+        document.getElementById('booked-appointments').textContent = sampleData.booked;
+        document.getElementById('completed-appointments').textContent = sampleData.completed;
+        document.getElementById('cancelled-appointments').textContent = sampleData.cancelled;
+        
+        // Update appointments table
+        const tableBody = document.getElementById('admin-appointments-list');
+        tableBody.innerHTML = '';
+        
+        sampleData.appointments.forEach(appointment => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${appointment.id}</td>
+                <td>${appointment.patient}</td>
+                <td>${appointment.doctor}</td>
+                <td>${appointment.department}</td>
+                <td>${appointment.time}</td>
+                <td><span class="appointment-status status-${appointment.status}">${appointment.status.charAt(0).toUpperCase() + appointment.status.slice(1)}</span></td>
+            `;
+            tableBody.appendChild(row);
+        });
+        
+        // Update chart
+        updateChart(sampleData.dailyStats);
+    }
+
+    function updateChart(data) {
+        const ctx = document.getElementById('appointments-chart').getContext('2d');
+        
+        // Destroy previous chart if it exists
+        if (appointmentsChart) {
+            appointmentsChart.destroy();
+        }
+        
+        appointmentsChart = new Chart(ctx, {
+            type: 'bar',
+            data: {
+                labels: data.labels,
+                datasets: [
+                    {
+                        label: 'Booked',
+                        data: data.booked,
+                        backgroundColor: '#3498db',
+                        borderColor: '#2980b9',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Completed',
+                        data: data.completed,
+                        backgroundColor: '#27ae60',
+                        borderColor: '#219653',
+                        borderWidth: 1
+                    },
+                    {
+                        label: 'Cancelled',
+                        data: data.cancelled,
+                        backgroundColor: '#e74c3c',
+                        borderColor: '#c0392b',
+                        borderWidth: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    y: {
+                        beginAtZero: true,
+                        title: {
+                            display: true,
+                            text: 'Number of Appointments'
+                        }
+                    },
+                    x: {
+                        title: {
+                            display: true,
+                            text: 'Time of Day'
+                        }
+                    }
+                }
+            }
+        });
+    }
+
+    function formatDate(dateString) {
+        const options = { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' };
+        return new Date(dateString).toLocaleDateString('en-US', options);
+    }
 });
+
+// Prevent scrolling up past the top
+window.addEventListener('scroll', function() {
+    if (window.scrollY < 0) {
+        window.scrollTo(0, 0);
+    }
+});
+
+// Alternative method that completely prevents upward scrolling
+document.body.style.overscrollBehaviorY = 'none';

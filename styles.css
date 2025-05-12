@@ -21,11 +21,19 @@
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
-body {
-    background-color: #f5f7fa;
-    color: var(--dark-color);
-    line-height: 1.6;
+html, body {
+    overflow-x: hidden;
+    height: 100%;
+    margin: 0;
+    padding: 0;
 }
+
+body {
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
 
 .container {
     width: 90%;
@@ -89,6 +97,7 @@ header {
     position: sticky;
     top: 0;
     z-index: 100;
+    width: 100%;
 }
 
 header .container {
@@ -175,13 +184,17 @@ nav a.active::after {
 
 /* Main Content Styles */
 main {
-    min-height: calc(100vh - 120px);
-    padding: 30px 0;
+    flex: 1;
+    padding: 20px 0 30px;
 }
-
 section {
     display: none;
     animation: fadeIn 0.5s ease;
+    padding-top: 20px; /* Added to control top padding for all sections */
+}
+
+#home-section {
+    padding-top: 10px; /* Even less padding for home section */
 }
 
 section.active-section {
@@ -216,6 +229,8 @@ h4 {
     align-items: center;
     gap: 40px;
     margin-bottom: 50px;
+    margin-top: 20px; /* Added to control top margin specifically */
+    min-height: 500px;
 }
 
 .hero-content {
@@ -249,10 +264,14 @@ h4 {
 
 .hero-image {
     flex: 1;
+    height: 100%; /* Add this */
 }
+
 
 .hero-image img {
     width: 100%;
+    height: 100%; /* Change this from auto to 100% */
+    object-fit: cover; /* Add this to ensure the image covers the space */
     border-radius: 10px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
 }
@@ -821,7 +840,7 @@ footer {
 
 /* Admin Dashboard Styles */
 #admin-section {
-    padding: 30px;
+    padding: 20px 30px; /* Reduced from 30px */
 }
 
 .dashboard-header {
